@@ -1796,6 +1796,78 @@
         font-size: 0.68rem;
       }
     }
+
+    /* ===== INSTAGRAM POPUP ===== */
+    .ig-popup {
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      background: rgba(26, 14, 16, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .ig-popup.open { display: flex; opacity: 1; }
+    .ig-popup__panel {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      background: linear-gradient(135deg, var(--wine-deep), var(--wine));
+      border: 1px solid rgba(201, 169, 110, 0.35);
+      border-radius: 8px;
+      padding: clamp(2.5rem, 6vw, 3rem) clamp(1.5rem, 5vw, 2.5rem);
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .ig-popup__close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(201, 169, 110, 0.4);
+      background: transparent;
+      color: var(--rose-light);
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .ig-popup__close:hover {
+      background: var(--gold);
+      color: var(--wine-deep);
+      border-color: var(--gold);
+    }
+    .ig-popup__heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 6vw, 2.5rem);
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .ig-popup__text {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 480px) {
+      .ig-popup__panel { padding: 2.75rem 1.25rem 2rem; }
+      .ig-popup .btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -2524,6 +2596,69 @@
         }, { passive: true });
       }
     }, false);
+  </script>
+
+  <!-- Instagram popup -->
+  <div class="ig-popup" id="ig-popup" role="dialog" aria-modal="true" aria-labelledby="ig-popup-heading" hidden>
+    <div class="ig-popup__panel">
+      <button type="button" class="ig-popup__close" aria-label="Close" data-ig-popup-close>&times;</button>
+      <h2 class="ig-popup__heading" id="ig-popup-heading">Follow the Journey</h2>
+      <p class="ig-popup__text">New wines, boutique arrivals, and events. Follow @roseboutiquewinebar</p>
+      <a href="https://www.instagram.com/roseboutiquewinebar/" target="_blank" rel="noopener" class="btn btn-primary" data-ig-popup-follow>Follow</a>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var popup = document.getElementById('ig-popup');
+      if (!popup) return;
+
+      var KEY = 'ig_popup_seen';
+      var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+      var lastFocus = null;
+
+      try {
+        var seen = localStorage.getItem(KEY);
+        if (seen && (Date.now() - parseInt(seen, 10)) < THIRTY_DAYS) return;
+      } catch (e) {}
+
+      function remember() {
+        try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+      }
+
+      function openPopup() {
+        lastFocus = document.activeElement;
+        popup.hidden = false;
+        requestAnimationFrame(function() { popup.classList.add('open'); });
+        var closeBtn = popup.querySelector('.ig-popup__close');
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closePopup() {
+        remember();
+        popup.classList.remove('open');
+        setTimeout(function() { popup.hidden = true; }, 300);
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+      }
+
+      var closers = popup.querySelectorAll('[data-ig-popup-close]');
+      for (var i = 0; i < closers.length; i++) {
+        closers[i].addEventListener('click', closePopup);
+      }
+
+      var follow = popup.querySelector('[data-ig-popup-follow]');
+      if (follow) follow.addEventListener('click', function() { closePopup(); });
+
+      popup.addEventListener('click', function(e) {
+        if (e.target === popup) closePopup();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && popup.classList.contains('open')) closePopup();
+      });
+
+      setTimeout(openPopup, 4500);
+    })();
   </script>
 
 </body>
