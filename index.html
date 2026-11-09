@@ -1364,6 +1364,40 @@
       color: var(--wine);
       border-color: var(--wine);
     }
+    button.event-featured__resy {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+    .event-featured__media {
+      position: relative;
+      display: block;
+    }
+    .event-stamp {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-18deg);
+      font-family: var(--font-body);
+      font-size: clamp(1.3rem, 4.5vw, 2.4rem);
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #C0272D;
+      border: 4px solid #C0272D;
+      border-radius: 6px;
+      padding: 0.45rem 1.1rem 0.45rem 1.3rem;
+      background: rgba(253, 248, 244, 0.72);
+      white-space: nowrap;
+      pointer-events: none;
+      line-height: 1;
+    }
+    @media (max-width: 768px) {
+      .event-featured__media { max-width: 360px; margin: 0 auto; }
+      .event-featured--reverse .event-featured__media { order: -1; }
+    }
 
     /* ===== HOURS OF OPERATION ===== */
     .hours-section {
@@ -2097,7 +2131,10 @@
       </div>
       <div class="events-featured">
       <div class="event-featured reveal">
-        <img class="event-featured__img" src="images/thanksgiving-wine-tasting.jpg" alt="Thanksgiving Wine Tasting flyer — a curated selection of wines paired with Thanksgiving-inspired dishes, Monday, November 16 at 7:00 PM, at Rosé Boutique &amp; Wine Bar" loading="lazy">
+        <div class="event-featured__media">
+          <img class="event-featured__img" src="images/thanksgiving-wine-tasting.jpg" alt="Thanksgiving Wine Tasting flyer — a curated selection of wines paired with Thanksgiving-inspired dishes, Monday, November 16 at 7:00 PM, at Rosé Boutique &amp; Wine Bar — SOLD OUT" loading="lazy">
+          <span class="event-stamp" aria-hidden="true">Sold Out</span>
+        </div>
         <div class="event-featured__info">
           <div class="event-featured__meta">
             <span class="event-featured__date">Monday · November 16</span>
@@ -2117,10 +2154,10 @@
             <li>The Pairings<span>Thanksgiving-inspired bites thoughtfully paired with each wine</span></li>
             <li>Take Home<span>Pick up your favorite bottles for your own Thanksgiving table</span></li>
           </ul>
-          <a href="https://resy.com/cities/loveland-oh-oh/venues/rose-boutique-and-wine-bar/events/thanksgiving-wine-tasting-2026-11-16-6?date=2026-10-20&amp;seats=2" target="_blank" rel="noopener" class="event-featured__resy">
+          <button type="button" class="event-featured__resy" data-open-soldout-popup aria-haspopup="dialog" aria-controls="event-soldout-popup">
             <img src="images/resy-logo.jpg" alt="Resy logo" width="52" height="52">
             <span>Reserve Your Spot</span>
-          </a>
+          </button>
         </div>
       </div>
       </div>
@@ -2658,6 +2695,54 @@
       });
 
       setTimeout(openPopup, 4500);
+    })();
+  </script>
+
+  <!-- Event sold out popup -->
+  <div class="ig-popup" id="event-soldout-popup" role="dialog" aria-modal="true" aria-labelledby="event-soldout-text" hidden>
+    <div class="ig-popup__panel">
+      <button type="button" class="ig-popup__close" aria-label="Close" data-soldout-popup-close>&times;</button>
+      <p class="ig-popup__text" id="event-soldout-text" style="margin-bottom:0;">Check back regularly for our next wine tasting event.</p>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var popup = document.getElementById('event-soldout-popup');
+      if (!popup) return;
+      var triggers = document.querySelectorAll('[data-open-soldout-popup]');
+      var lastFocus = null;
+
+      function openPopup() {
+        lastFocus = document.activeElement;
+        popup.hidden = false;
+        requestAnimationFrame(function() { popup.classList.add('open'); });
+        var closeBtn = popup.querySelector('.ig-popup__close');
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closePopup() {
+        popup.classList.remove('open');
+        setTimeout(function() { popup.hidden = true; }, 300);
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+      }
+
+      for (var i = 0; i < triggers.length; i++) {
+        triggers[i].addEventListener('click', function(e) { e.preventDefault(); openPopup(); });
+      }
+
+      var closers = popup.querySelectorAll('[data-soldout-popup-close]');
+      for (var j = 0; j < closers.length; j++) {
+        closers[j].addEventListener('click', closePopup);
+      }
+
+      popup.addEventListener('click', function(e) {
+        if (e.target === popup) closePopup();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && popup.classList.contains('open')) closePopup();
+      });
     })();
   </script>
 
